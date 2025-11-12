@@ -14,7 +14,7 @@ This plugin does not need to be included in your builds, as it's only a developm
 
 ### Benefits
 
-- Installing our plugin this way will ensure you get the freshest updates the moment they come out, see [the update guide](#update-the-plugin-in-unity).
+- Get the freshest updates the moment they come out, see [the update guide](#update-the-plugin-in-unity).
 
 ### Caveats
 
@@ -52,13 +52,12 @@ This plugin does not need to be included in your builds, as it's only a developm
 
 The only other official distribution channels for this plugin are:
 
-- [Unity Asset Store package](https://assetstore.unity.com/packages/tools/network/edgegap-game-server-hosting-212563)
 - [Mirror Networking source](https://github.com/MirrorNetworking/Mirror)
 - [Mirror Networking free package](https://assetstore.unity.com/packages/tools/network/mirror-129321)
 - [Mirror Networking LTS package](https://assetstore.unity.com/packages/tools/network/mirror-lts-102631)
-- [Fish Networking source](https://github.com/FirstGearGames/FishNet)
-- [Fish Networking free package](https://assetstore.unity.com/packages/tools/network/fishnet-networking-evolved-207815)
-- [Fish Networking Pro package](https://assetstore.unity.com/packages/tools/network/fishnet-pro-networking-evolved-287711)
+- [PurrNet Networking source](https://github.com/PurrNet/PurrNet)
+- [PurrNet Networking on Unity Asset Store](https://assetstore.unity.com/packages/tools/network/purrnet-multiplayer-networking-297320)
+- [PurrNet Networking on OpenUPM](https://openupm.com/packages/dev.purrnet.purrnet/)
 
 ## Next Steps
 

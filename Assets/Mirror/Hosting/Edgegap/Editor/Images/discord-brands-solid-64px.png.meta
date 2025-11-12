@@ -143,5 +143,5 @@ AssetOrigin:
   productId: 129321
   packageName: Mirror
   packageVersion: 96.0.1
-  assetPath: Assets/Mirror/Hosting/Edgegap/Editor/Images/discord-brands-solid-64px.png
+  assetPath: Assets/edgegap-unity-plugin/Editor/Images/discord-brands-solid-64px.png
   uploadId: 736421

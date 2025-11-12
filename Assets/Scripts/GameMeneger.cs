@@ -46,4 +46,9 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void ExitTheGame()
+    {
+        Application.Quit();
+    }
+
 }

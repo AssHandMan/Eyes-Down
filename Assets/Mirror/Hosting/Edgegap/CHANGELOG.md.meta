@@ -9,6 +9,6 @@ AssetOrigin:
   serializedVersion: 1
   productId: 129321
   packageName: Mirror
-  packageVersion: 96.0.1
-  assetPath: Assets/Mirror/Hosting/Edgegap/CHANGELOG.md
-  uploadId: 736421
+  packageVersion: 
+  assetPath: Assets/edgegap-unity-plugin/CHANGELOG.md
+  uploadId: 0
