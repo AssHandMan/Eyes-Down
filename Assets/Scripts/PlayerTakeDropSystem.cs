@@ -1,13 +1,14 @@
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 public class PlayerTakeDropSystem : NetworkBehaviour
 {
-    [SerializeField] private float holdDistance = 2f;
-    [SerializeField] private float holdForce = 200f;
+    [SerializeField] private KeyCode run;
+    [SerializeField] private float speed;
     [SerializeField] private LayerMask pickupLayer;
 
-    private Rigidbody heldRb;
+    private InteractiveObject obj;
 
     void Update()
     {
@@ -17,32 +18,37 @@ public class PlayerTakeDropSystem : NetworkBehaviour
             Ray ray = new Ray(transform.position, transform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, 5, pickupLayer))
             {
-                Rigidbody rb = hit.collider.attachedRigidbody;
-                if (rb != null)
+                if (hit.collider.gameObject.GetComponent<InteractiveObject>() != null)
                 {
-                    heldRb = rb;
-                    heldRb.useGravity = false;
-                    heldRb.linearDamping = 10f;
+                    obj = hit.collider.gameObject.GetComponent<InteractiveObject>();
+                    obj.Interact(gameObject);
                 }
             }
         }
 
-        if (Input.GetKeyUp(KeyCode.Mouse0) && heldRb != null)
+        if (Input.GetKeyDown(KeyCode.Mouse1) && obj != null)
         {
-            heldRb.useGravity = true;
-            heldRb.linearDamping = 0f;
-            heldRb = null;
+            obj.ExtraInteraction();
         }
+
+        if (Input.GetKeyUp(KeyCode.Mouse0) && obj != null)
+        {
+            obj.Disconnect();
+            obj = null;
+        }
+
+        if(Input.GetKey(run))
+        {
+            float moveX = Input.GetAxis("Horizontal");
+            float moveY = Input.GetAxis("Vertical");
+            Vector3 move = new Vector3(moveX, 0, moveY);
+            transform.Translate(move * speed * Time.deltaTime);
+        }
+
     }
 
-    void FixedUpdate()
+    public void removeObject()
     {
-        if (heldRb != null)
-        {
-            Vector3 targetPos = transform.position + transform.forward * holdDistance;
-            Vector3 direction = targetPos - heldRb.position;
-
-            heldRb.AddForce(direction * holdForce * Time.fixedDeltaTime, ForceMode.VelocityChange);
-        }
+        if (obj != null) { obj = null; }
     }
 }

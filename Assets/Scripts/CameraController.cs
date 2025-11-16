@@ -9,14 +9,16 @@ public class CameraController : NetworkBehaviour
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private Transform head;
     private GameObject playerCameraInstance;
+    private CinemachineCamera virtualCamera;
 
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
+        Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         playerCameraInstance = Instantiate(playerCameraPrefab);
-        var vcam = playerCameraInstance.GetComponent<CinemachineCamera>();
-        vcam.Target.TrackingTarget = head;
+        virtualCamera = playerCameraInstance.GetComponent<CinemachineCamera>();
+        virtualCamera.Target.TrackingTarget = head;
 
         var headConstraint = head.GetComponent<RotationConstraint>();
         StartCoroutine(AssignConstraintNextFrame(headConstraint, playerCameraInstance.transform));
@@ -44,6 +46,27 @@ public class CameraController : NetworkBehaviour
         if (isLocalPlayer && playerCameraInstance != null)
         {
             Destroy(playerCameraInstance);
+        }
+    }
+
+    public void ChangeView(Transform viewPos)
+    {
+        if (virtualCamera.Target.TrackingTarget == head)
+        {
+            virtualCamera.Target.TrackingTarget = viewPos;
+            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
+            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
+            playerCameraInstance.transform.rotation = Quaternion.Euler(viewPos.transform.eulerAngles.x, viewPos.transform.eulerAngles.y, viewPos.transform.eulerAngles.z);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            virtualCamera.Target.TrackingTarget = head;
+            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = true;
+            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = true;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 }
