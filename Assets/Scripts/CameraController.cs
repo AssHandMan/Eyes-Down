@@ -69,4 +69,22 @@ public class CameraController : NetworkBehaviour
             Cursor.visible = false;
         }
     }
+
+    public void LockCameraController()
+    {
+        if (!Cursor.visible)
+        {
+            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
+            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = true;
+            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = true;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+    }
 }

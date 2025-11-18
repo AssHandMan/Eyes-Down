@@ -47,4 +47,8 @@ public class LaptopController : InteractiveObject
         text.text = "У вас ровно" + money + "русских долларов";
     }
 
+    public void AddMoney(int money)
+    {
+        this.money += money;
+    }
 }
