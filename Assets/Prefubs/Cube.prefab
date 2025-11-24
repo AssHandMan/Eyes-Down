@@ -203,6 +203,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 955f8efea00c2164d8cc055566585186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hintText: "\u041B\u0435\u0433\u0435\u043D\u0434\u0430 \u0438\u043D\u0434\u0438-\u0440\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u043A\u0438
+    - \u041A\u0443\u0431\nM0 - \u0412\u0437\u044F\u0442\u044C/\u041E\u0442\u043F\u0443\u0441\u0442\u0438\u0442\u044C\nM1
+    - \u0411\u0440\u043E\u0441\u0438\u0442\u044C"
   holdDistance: 1.5
   holdForce: 200
   throwForce: 10

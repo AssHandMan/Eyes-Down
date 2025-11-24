@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class TakeableObject : InteractiveObject
 {
+    [SerializeField] [TextArea(3, 4)] private string hintText;
     [SerializeField] private float holdDistance, holdForce, throwForce;
     private Rigidbody rb;
     private bool isUsed;
@@ -10,6 +11,11 @@ public class TakeableObject : InteractiveObject
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+    }
+
+    public override string PrintHelp()
+    {
+        return hintText;
     }
     public override void Interact(GameObject plr)
     {

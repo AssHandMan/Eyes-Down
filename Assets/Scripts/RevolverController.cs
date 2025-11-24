@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class RevolverController : InteractiveObject
 {
+
+    [SerializeField] [TextArea(3, 4)] private string hintText;
     [SerializeField] private Transform Cylindr;
     [SerializeField] private BulletSocketSetter[] sockets;
     [SerializeField] private CameraController cam;
@@ -30,6 +32,10 @@ public class RevolverController : InteractiveObject
     {
         startPos = transform.position;
         startRot = transform.rotation.eulerAngles;
+    }
+    public override string PrintHelp()
+    {
+        return hintText;
     }
 
     public void Shoot()

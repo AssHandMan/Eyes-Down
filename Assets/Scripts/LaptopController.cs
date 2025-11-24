@@ -4,6 +4,7 @@ using TMPro;
 
 public class LaptopController : InteractiveObject
 {
+    [SerializeField] [TextArea(3, 4)] private string hintText;
     [SerializeField] private Transform laptopCover, viewPos;
     [SerializeField] private TMP_Text text;
     private float money;
@@ -50,5 +51,10 @@ public class LaptopController : InteractiveObject
     public void AddMoney(int money)
     {
         this.money += money;
+    }
+
+    public override string PrintHelp()
+    {
+        return hintText;
     }
 }

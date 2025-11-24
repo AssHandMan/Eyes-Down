@@ -8,47 +8,86 @@ public class PlayerTakeDropSystem : NetworkBehaviour
     [SerializeField] private float speed;
     [SerializeField] private LayerMask pickupLayer;
 
-    private InteractiveObject obj;
-
+    private InteractiveObject objLook, objIntercat;
+    private HintsMsgController hintsMsgController;
+    private void Start()
+    {
+        hintsMsgController = FindAnyObjectByType<HintsMsgController>();
+    }
     void Update()
     {
         if(!isLocalPlayer) return;
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        LookObject();
+        InteractObject();
+        Move();
+    }
+
+    private void LookObject()
+    {
+        Ray ray = new Ray(transform.position, transform.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 5, pickupLayer))
         {
-            Ray ray = new Ray(transform.position, transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 5, pickupLayer))
-            {
-                if (hit.collider.gameObject.GetComponent<InteractiveObject>() != null)
-                {
-                    obj = hit.collider.gameObject.GetComponent<InteractiveObject>();
-                    obj.Interact(gameObject);
+            InteractiveObject io = hit.collider.GetComponent<InteractiveObject>();
+
+            if (io != null && io != objLook) 
+            { 
+                objLook = io;
+                if (objIntercat == null) 
+                { 
+                    hintsMsgController.Print(objLook.PrintHelp());
+                    objLook.EnableOutline();
                 }
             }
         }
-
-        if (Input.GetKeyDown(KeyCode.Mouse1) && obj != null)
+        else
         {
-            obj.ExtraInteraction();
+            if(objLook != null)
+            {
+                objLook.DisableOutline();
+                objLook = null;
+                hintsMsgController.Hide();
+            }
+        }
+    }
+
+    private void InteractObject()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            if (objIntercat == null)
+            {
+                if(objLook != null)
+                {
+                    objIntercat = objLook;
+                    objIntercat.Interact(gameObject);
+                }
+            }
+            else
+            {
+                objIntercat.Disconnect();
+                objIntercat = null;
+            }
         }
 
-        if (Input.GetKeyUp(KeyCode.Mouse0) && obj != null)
+        if (Input.GetKeyDown(KeyCode.Mouse1) && objIntercat != null)
         {
-            obj.Disconnect();
-            obj = null;
+            objIntercat.ExtraInteraction();
         }
+    }
 
-        if(Input.GetKey(run))
+    private void Move()
+    {
+        if (Input.GetKey(run))
         {
             float moveX = Input.GetAxis("Horizontal");
             float moveY = Input.GetAxis("Vertical");
             Vector3 move = new Vector3(moveX, 0, moveY);
             transform.Translate(move * speed * Time.deltaTime);
         }
-
     }
-
     public void removeObject()
     {
-        if (obj != null) { obj = null; }
+        if (objIntercat != null) { objIntercat = null; }
     }
 }
