@@ -24,30 +24,38 @@ public class PlayerTakeDropSystem : NetworkBehaviour
 
     private void LookObject()
     {
-        Ray ray = new Ray(transform.position, transform.forward);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 5, pickupLayer))
+        if (objIntercat != null)
         {
-            InteractiveObject io = hit.collider.GetComponent<InteractiveObject>();
-
-            if (io != null && io != objLook) 
-            { 
-                objLook = io;
-                if (objIntercat == null) 
-                { 
-                    hintsMsgController.Print(objLook.PrintHelp());
-                    objLook.EnableOutline();
-                }
-            }
-        }
-        else
-        {
-            if(objLook != null)
+            if (objLook != null)
             {
                 objLook.DisableOutline();
-                objLook = null;
                 hintsMsgController.Hide();
+                objLook = null;
             }
+            return;
+        }
+
+        Ray ray = new Ray(transform.position, transform.forward);
+        InteractiveObject newObj = null;
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 5, pickupLayer))
+            newObj = hit.collider.GetComponentInParent<InteractiveObject>();
+
+        if (newObj == objLook)
+            return;
+
+        if (objLook != null)
+        {
+            objLook.DisableOutline();
+            hintsMsgController.Hide();
+        }
+
+        objLook = newObj;
+
+        if (objLook != null)
+        {
+            objLook.EnableOutline();
+            hintsMsgController.Print(objLook.PrintHelp());
         }
     }
 
