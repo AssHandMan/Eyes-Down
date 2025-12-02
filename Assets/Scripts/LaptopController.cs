@@ -6,7 +6,7 @@ public class LaptopController : InteractiveObject
 {
     [SerializeField] [TextArea(3, 4)] private string hintText;
     [SerializeField] private Transform laptopCover, viewPos;
-    [SerializeField] private TMP_Text text;
+    [SerializeField] private TMP_Text text, GameStageText;
     private float money;
     private bool isOpen, isUsing;
     private CameraController cameraController;
@@ -56,5 +56,10 @@ public class LaptopController : InteractiveObject
     public override string PrintHelp()
     {
         return hintText;
+    }
+
+    public void SetGameStage(string type)
+    {
+        GameStageText.text = type;
     }
 }

@@ -68,6 +68,7 @@ public class RevolverController : InteractiveObject
         transform.parent = null;
         transform.position = startPos;
         transform.eulerAngles = startRot;
+        Cylindr.localEulerAngles = new Vector3(0, 0, 0);
         cam.LockCameraController();
         inProcess = false;
     }

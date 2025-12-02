@@ -1,6 +1,6 @@
 using UnityEngine;
-
-public class InteractiveObject : MonoBehaviour
+using Mirror;
+public class InteractiveObject : NetworkBehaviour
 {
     private string msg;
 

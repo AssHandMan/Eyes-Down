@@ -1,15 +1,16 @@
-
 using UnityEngine;
 using Mirror;
-using TMPro;
 using System.Collections.Generic;
+using System.Collections;
 
 public class GameManager : NetworkBehaviour
 {
     [SerializeField] private Transform center;
     [SerializeField] private float radius = 5f;
-
-    private readonly List<GameObject> spawnedPlayers = new List<GameObject>();
+    [SerializeField] private List<LaptopController> laptops;
+    [SerializeField] private List<PlayerConnectionMeneger> playerConnections;
+    private List<GameObject> spawnedPlayers = new List<GameObject>();
+    private float timePrepare, timeBidding;
 
     [Server]
     public void AddPlayer(GameObject player)
@@ -18,13 +19,19 @@ public class GameManager : NetworkBehaviour
             spawnedPlayers.Add(player);
 
         ArrangePlayersInCircle();
+        laptops.Add(player.GetComponent<PlayerConnectionMeneger>().Getlaptop());
+        playerConnections.Add(player.GetComponent<PlayerConnectionMeneger>());
     }
 
     [Server]
     public void RemovePlayer(GameObject player)
     {
         if (spawnedPlayers.Contains(player))
+        {
+            laptops.Remove(player.GetComponent<PlayerConnectionMeneger>().Getlaptop());
+            playerConnections.Remove(player.GetComponent<PlayerConnectionMeneger>());
             spawnedPlayers.Remove(player);
+        }
 
         ArrangePlayersInCircle();
     }
@@ -46,9 +53,43 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [Server]
+    public void SetReadyPlayer()
+    {
+        int count = 0;
+        for (int i = 0; i < playerConnections.Count; i++)
+        {
+            if (playerConnections[i].GetReady()) count++;
+        }
+        if (count > 0)
+        {
+            StartCoroutine(GameStageProcces());
+        }
+    }
+
+    [Server]
+    public void SetGameStage(string type)
+    {
+        for (int i = 0; i < playerConnections.Count; i++)
+        {
+            playerConnections[i].SetStage(type);
+        }
+    }
+
+    private IEnumerator GameStageProcces()
+    {
+        yield return new WaitForSeconds(3);
+        SetGameStage("Preparing");
+        yield return new WaitForSeconds(3);
+        SetGameStage("Game");
+        yield return new WaitForSeconds(3);
+        SetGameStage("Preparing2");
+        yield return new WaitForSeconds(3);
+        SetGameStage("Game2");
+    }
+
     public void ExitTheGame()
     {
         Application.Quit();
     }
-
 }
