@@ -1986,6 +1986,7 @@ GameObject:
   - component: {fileID: 2145723443624964765}
   - component: {fileID: 6633428213004886371}
   - component: {fileID: 6014499629566573568}
+  - component: {fileID: 3094662478752851024}
   - component: {fileID: 5752363025016176886}
   m_Layer: 0
   m_Name: Player
@@ -2157,6 +2158,19 @@ MonoBehaviour:
   syncInterval: 0
   playerCameraPrefab: {fileID: 5690874078687207561, guid: 3c56ed8f8c6d98a4fa2a62dd283a0f6e, type: 3}
   head: {fileID: 149799578631833987}
+--- !u!114 &3094662478752851024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4220736663905400612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86eb661c4e8debe4d8a376c9699f6ab7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panel: {fileID: 0}
 --- !u!114 &5752363025016176886
 MonoBehaviour:
   m_ObjectHideFlags: 0
