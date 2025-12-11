@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
@@ -9,9 +10,17 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private float radius = 5f;
     [SerializeField] private List<LaptopController> laptops;
     [SerializeField] private List<PlayerConnectionMeneger> playerConnections;
-    private List<GameObject> spawnedPlayers = new List<GameObject>();
-    private float timePrepare, timeBidding;
 
+    private List<GameObject> spawnedPlayers = new ();
+    private float timePrepare, timeBidding;
+    private bool _isGameStarted;
+    private VotingManager _votingManager;
+
+    public void Initialize(VotingManager votingManager)
+    {
+        _votingManager = votingManager;
+    }
+    
     [Server]
     public void AddPlayer(GameObject player)
     {
@@ -61,8 +70,9 @@ public class GameManager : NetworkBehaviour
         {
             if (playerConnections[i].GetReady()) count++;
         }
-        if (count > 0)
+        if (count > 0 && !_isGameStarted)
         {
+            _isGameStarted = true;
             StartCoroutine(GameStageProcces());
         }
     }
@@ -80,12 +90,16 @@ public class GameManager : NetworkBehaviour
     {
         yield return new WaitForSeconds(3);
         SetGameStage("Preparing");
-        yield return new WaitForSeconds(3);
+
+        yield return StartCoroutine(StartModifiersVotePhase());
+
         SetGameStage("Game");
-        yield return new WaitForSeconds(3);
-        SetGameStage("Preparing2");
-        yield return new WaitForSeconds(3);
-        SetGameStage("Game2");
+        StartCoroutine(GameStageProcces());
+    }
+
+    private IEnumerator StartModifiersVotePhase()
+    {
+        yield return _votingManager.StartVotingPhase(spawnedPlayers);
     }
 
     public void ExitTheGame()
