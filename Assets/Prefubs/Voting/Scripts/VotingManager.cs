@@ -6,16 +6,20 @@ using System.Linq;
 
 public class VotingManager : NetworkBehaviour
 {
-    public System.Action<List<ModifierData>, System.Action<ModifierData>> OnShowVoteData;
+    public System.Action<List<ModifierData>, System.Action<ModifierData>, System.Action, bool> OnShowVoteData;
     public System.Action<float> OnUpdateTimer;
-    public System.Action<Dictionary<string, int>> OnVotesDataChanged;
+    public System.Action<Dictionary<string, int>, int> OnVotesDataChanged;
     public System.Action<string> OnModifierWin;
     private Dictionary<string, int> _votingResults = new ();
     private List<ModifierData> _currentVotingModifiers = new ();
     private Dictionary<uint, string> _playerVotes = new ();
+    private Dictionary<uint, bool> _rerollVotes = new ();
+    private int _rerollVoteCount;
+    private bool _rerollUsed;
     private GameConfig _config;
     private bool _allPlayersVoted;
     private int _totalPlayers;
+    private const string REROLL_KEY = "REROLL";
 
     public void Initialize(GameConfig config)
     {
@@ -27,9 +31,16 @@ public class VotingManager : NetworkBehaviour
     {
         _votingResults.Clear();
         _playerVotes.Clear();
+        _rerollVotes.Clear();
+        _rerollVoteCount = 0;
         _allPlayersVoted = false;
         _totalPlayers = players.Count;
-        _currentVotingModifiers = SelectRandomModifiers(_config);
+
+        // Сбрасываем флаг Reroll для новой фазы голосования
+        _rerollUsed = false;
+
+        // Если Reroll доступен, выбираем 3 модификатора, иначе 4
+        _currentVotingModifiers = SelectRandomModifiers(_config, !_rerollUsed);
 
         foreach (var modifier in _currentVotingModifiers)
         {
@@ -37,33 +48,62 @@ public class VotingManager : NetworkBehaviour
         }
 
         string[] modifierNames = GetModifierNames(_currentVotingModifiers);
-        RpcShowVotingScreen(modifierNames);
+        RpcShowVotingScreen(modifierNames, !_rerollUsed);
 
-        float timeRemaining = _config.VotingTime;
-        while (timeRemaining > 0 && !_allPlayersVoted)
+        bool rerollWon;
+        do
         {
-            RpcUpdateVotingTimer(timeRemaining);
-            yield return new WaitForSeconds(1f);
-            timeRemaining -= 1f;
-        }
+            rerollWon = false;
+            float timeRemaining = _config.VotingTime;
+            while (timeRemaining > 0 && !_allPlayersVoted)
+            {
+                RpcUpdateVotingTimer(timeRemaining);
+                yield return new WaitForSeconds(1f);
+                timeRemaining -= 1f;
+            }
 
-        if (!_allPlayersVoted)
-        {
-            HandleVotingTimeout(players);
-        }
+            if (!_allPlayersVoted)
+            {
+                HandleVotingTimeout(players);
+            }
 
-        CalculateVotingResults();
+            rerollWon = CalculateVotingResults();
+
+            if (rerollWon)
+            {
+                _rerollUsed = true;
+
+                // Перегенерируем модификаторы
+                _votingResults.Clear();
+                _playerVotes.Clear();
+                _rerollVotes.Clear();
+                _rerollVoteCount = 0;
+                _allPlayersVoted = false;
+
+                // После Reroll выбираем 4 модификатора (без Reroll карточки)
+                _currentVotingModifiers = SelectRandomModifiers(_config, false);
+
+                foreach (var modifier in _currentVotingModifiers)
+                    _votingResults[modifier.ModifierName] = 0;
+
+                modifierNames = GetModifierNames(_currentVotingModifiers);
+                RpcShowVotingScreen(modifierNames, false);
+            }
+        } while (rerollWon);
 
         yield return new WaitForSeconds(_config.WinnerShowDuration);
     }
 
     [Server]
-    private List<ModifierData> SelectRandomModifiers(GameConfig config)
+    private List<ModifierData> SelectRandomModifiers(GameConfig config, bool rerollAvailable)
     {
         List<ModifierData> selectedModifiers = new List<ModifierData>();
         List<ModifierData> tempList = new List<ModifierData>(config.Modifiers);
 
-        int count = Mathf.Min(4, config.Modifiers.Length);
+        // Если Reroll доступен, выбираем 3 модификатора (4-я карточка будет Reroll)
+        // Если Reroll недоступен, выбираем 4 модификатора
+        int count = rerollAvailable ? Mathf.Min(3, config.Modifiers.Length) : Mathf.Min(4, config.Modifiers.Length);
+
         for (int i = 0; i < count; i++)
         {
             int randomIndex = Random.Range(0, tempList.Count);
@@ -90,7 +130,8 @@ public class VotingManager : NetworkBehaviour
         foreach (var player in players)
         {
             var netId = player.GetComponent<NetworkIdentity>();
-            if (!_playerVotes.ContainsKey(netId.netId))
+            // Назначаем случайный модификатор только игрокам, которые не голосовали вообще
+            if (!_playerVotes.ContainsKey(netId.netId) && !_rerollVotes.ContainsKey(netId.netId))
             {
                 int randomModifierIndex = Random.Range(0, _currentVotingModifiers.Count);
                 string randomModifierName = _currentVotingModifiers[randomModifierIndex].ModifierName;
@@ -101,21 +142,59 @@ public class VotingManager : NetworkBehaviour
     }
 
     [Server]
-    private void CalculateVotingResults()
+    private bool CalculateVotingResults()
     {
         VoteCount[] voteCounts = GetVoteCountsArray();
-        RpcUpdateVoteCounts(voteCounts);
+        RpcUpdateVoteCounts(voteCounts, _rerollVoteCount);
 
-        // Находим максимальное количество голосов
-        int maxVotes = _votingResults.Max(x => x.Value);
+        // Находим максимальное количество голосов среди модификаторов
+        int maxVotes = _votingResults.Count > 0 ? _votingResults.Max(x => x.Value) : 0;
 
-        // Находим всех модификаторов с максимальным количеством голосов
-        var winners = _votingResults.Where(x => x.Value == maxVotes).ToList();
+        // Если Reroll имеет больше голосов, чем любой модификатор - он побеждает
+        if (!_rerollUsed && _rerollVoteCount > maxVotes)
+        {
+            return true;
+        }
 
-        // Выбираем случайного победителя из тех, кто набрал максимальное количество голосов
-        var winner = winners[Random.Range(0, winners.Count)];
+        // Если Reroll имеет столько же голосов, сколько максимум - добавляем его в список победителей
+        List<string> candidates = new List<string>();
 
-        RpcHighlightWinner(winner.Key);
+        if (!_rerollUsed && _rerollVoteCount == maxVotes && _rerollVoteCount > 0)
+        {
+            candidates.Add(REROLL_KEY);
+        }
+
+        // Добавляем модификаторов с максимальным количеством голосов
+        foreach (var kvp in _votingResults)
+        {
+            if (kvp.Value == maxVotes)
+                candidates.Add(kvp.Key);
+        }
+
+        // Выбираем случайного победителя
+        if (candidates.Count > 0)
+        {
+            string winner = candidates[Random.Range(0, candidates.Count)];
+
+            if (winner == REROLL_KEY)
+            {
+                return true;
+            }
+            else
+            {
+                RpcHighlightWinner(winner);
+                return false;
+            }
+        }
+
+        // Если никто не проголосовал - выбираем случайный модификатор
+        if (_votingResults.Count > 0)
+        {
+            var randomWinner = _votingResults.ElementAt(Random.Range(0, _votingResults.Count));
+            RpcHighlightWinner(randomWinner.Key);
+        }
+
+        return false;
     }
 
     [Command(requiresAuthority = false)]
@@ -124,6 +203,13 @@ public class VotingManager : NetworkBehaviour
         if (sender == null) return;
 
         uint playerId = sender.identity.netId;
+
+        // Убираем голос за Reroll, если был
+        if (_rerollVotes.ContainsKey(playerId))
+        {
+            _rerollVotes.Remove(playerId);
+            _rerollVoteCount--;
+        }
 
         // Если modifierName пустой или null - отменяем голос
         if (string.IsNullOrEmpty(modifierName))
@@ -153,13 +239,56 @@ public class VotingManager : NetworkBehaviour
             _votingResults[modifierName]++;
 
             // Проверяем, все ли игроки проголосовали
-            if (_playerVotes.Count >= _totalPlayers)
-                _allPlayersVoted = true;
+            CheckAllPlayersVoted();
         }
 
         // Обновляем счетчики на всех клиентах
         VoteCount[] voteCounts = GetVoteCountsArray();
-        RpcUpdateVoteCounts(voteCounts);
+        RpcUpdateVoteCounts(voteCounts, _rerollVoteCount);
+    }
+
+    [Command(requiresAuthority = false)]
+    public void CmdVoteForReroll(NetworkConnectionToClient sender = null)
+    {
+        if (sender == null) return;
+        if (_rerollUsed) return;
+
+        uint playerId = sender.identity.netId;
+
+        // Если игрок уже голосовал за Reroll - отменяем голос
+        if (_rerollVotes.ContainsKey(playerId))
+        {
+            _rerollVotes.Remove(playerId);
+            _rerollVoteCount--;
+        }
+        else
+        {
+            // Убираем голос за модификатор, если был
+            if (_playerVotes.ContainsKey(playerId))
+            {
+                string previousVote = _playerVotes[playerId];
+                _votingResults[previousVote]--;
+                _playerVotes.Remove(playerId);
+            }
+
+            // Добавляем голос за Reroll
+            _rerollVotes[playerId] = true;
+            _rerollVoteCount++;
+
+            // Проверяем, все ли игроки проголосовали
+            CheckAllPlayersVoted();
+        }
+
+        // Обновляем счетчики на всех клиентах
+        VoteCount[] voteCounts = GetVoteCountsArray();
+        RpcUpdateVoteCounts(voteCounts, _rerollVoteCount);
+    }
+
+    private void CheckAllPlayersVoted()
+    {
+        int totalVotes = _playerVotes.Count + _rerollVotes.Count;
+        if (totalVotes >= _totalPlayers)
+            _allPlayersVoted = true;
     }
 
     private VoteCount[] GetVoteCountsArray()
@@ -174,7 +303,7 @@ public class VotingManager : NetworkBehaviour
         return counts;
     }
 
-    private void ShowVotingScreenLocal(string[] modifierNames)
+    private void ShowVotingScreenLocal(string[] modifierNames, bool rerollAvailable)
     {
         List<ModifierData> tempModifiers = new ();
         foreach (var name in modifierNames)
@@ -183,13 +312,13 @@ public class VotingManager : NetworkBehaviour
             if (modifier)
                 tempModifiers.Add(modifier);
         }
-        OnShowVoteData?.Invoke(tempModifiers, OnPlayerVoted);
+        OnShowVoteData?.Invoke(tempModifiers, OnPlayerVoted, OnPlayerVotedReroll, rerollAvailable);
     }
 
     [ClientRpc]
-    private void RpcShowVotingScreen(string[] modifierNames)
+    private void RpcShowVotingScreen(string[] modifierNames, bool rerollAvailable)
     {
-        ShowVotingScreenLocal(modifierNames);
+        ShowVotingScreenLocal(modifierNames, rerollAvailable);
     }
 
     [ClientRpc]
@@ -198,18 +327,18 @@ public class VotingManager : NetworkBehaviour
         OnUpdateTimer?.Invoke(timeRemaining);
     }
 
-    private void UpdateVoteCountsLocal(VoteCount[] voteCounts)
+    private void UpdateVoteCountsLocal(VoteCount[] voteCounts, int rerollCount)
     {
         Dictionary<string, int> countsDict = new Dictionary<string, int>();
         foreach (var voteCount in voteCounts)
             countsDict[voteCount.modifierName] = voteCount.count;
-        OnVotesDataChanged?.Invoke(countsDict);
+        OnVotesDataChanged?.Invoke(countsDict, rerollCount);
     }
 
     [ClientRpc]
-    private void RpcUpdateVoteCounts(VoteCount[] voteCounts)
+    private void RpcUpdateVoteCounts(VoteCount[] voteCounts, int rerollCount)
     {
-        UpdateVoteCountsLocal(voteCounts);
+        UpdateVoteCountsLocal(voteCounts, rerollCount);
     }
 
     [ClientRpc]
@@ -221,6 +350,11 @@ public class VotingManager : NetworkBehaviour
     private void OnPlayerVoted(ModifierData modifier)
     {
         CmdVoteForModifier(!modifier ? "" : modifier.ModifierName);
+    }
+
+    private void OnPlayerVotedReroll()
+    {
+        CmdVoteForReroll();
     }
 }
 

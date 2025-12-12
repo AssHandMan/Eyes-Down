@@ -10,7 +10,7 @@ public class GameUIRoot : MonoBehaviour
         votingManager.OnUpdateTimer += _votingUI.UpdateTimer;
         votingManager.OnVotesDataChanged += _votingUI.UpdateVoteCounts;
         votingManager.OnModifierWin += _votingUI.HighlightWinner;
-        
+
         _votingUI.Initialize(config);
     }
 }

@@ -345,6 +345,7 @@ MonoBehaviour:
   - {fileID: 9087898687928549087}
   - {fileID: 2034358479540375576}
   _timerText: {fileID: 5287692333061298609}
+  _rerollModifierData: {fileID: 11400000, guid: ed6ca55e5f0060c4c98c30a05edcf36b, type: 2}
 --- !u!225 &767058309993579650
 CanvasGroup:
   m_ObjectHideFlags: 0
