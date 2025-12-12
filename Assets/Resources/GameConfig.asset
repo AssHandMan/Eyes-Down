@@ -17,3 +17,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 415940ee7e9fbdb43a10c78ad04ac3a9, type: 2}
   - {fileID: 11400000, guid: 64a2239d0525c0a42be4d99967bcfa5d, type: 2}
   - {fileID: 11400000, guid: 4be426053fead0340acd4510620c6171, type: 2}
+  - {fileID: 11400000, guid: d67d820d95f378946abd8091d593468f, type: 2}
+  - {fileID: 11400000, guid: 127f66de70256f9459f965fbb420dfed, type: 2}
+  - {fileID: 11400000, guid: 18ded24f342c64d489d762538e286e2b, type: 2}
+  - {fileID: 11400000, guid: fda4bcdf702b2694984701ba315aeb69, type: 2}
+  VotingTime: 30
+  WinnerShowDuration: 6
