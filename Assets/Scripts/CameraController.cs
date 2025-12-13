@@ -55,7 +55,7 @@ public class CameraController : NetworkBehaviour
 
     private void Update()
     {
-        if (_isCursorLocked)
+        if (_isCursorLocked && isLocalPlayer)
         {
             if (Cursor.visible)
             {

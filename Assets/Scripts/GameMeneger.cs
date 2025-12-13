@@ -113,11 +113,15 @@ public class GameManager : NetworkBehaviour
     [Client]
     private void CheckForLocalPlayer()
     {
-        var player = FindFirstObjectByType<PlayerController>();
-        if (player)
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
         {
-            _player = player;
-            OnPlayerInitialized?.Invoke(_player);
+            if (player.isLocalPlayer)
+            {
+                _player = player;
+                OnPlayerInitialized?.Invoke(_player);
+                break;
+            }
         }
     }
     
