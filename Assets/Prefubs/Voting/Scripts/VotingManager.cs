@@ -11,6 +11,7 @@ public class VotingManager : NetworkBehaviour
     public System.Action<Dictionary<string, int>, int> OnVotesDataChanged;
     public System.Action<string> OnModifierWin;
     public System.Action OnVotingEnd;
+    public System.Action OnVotingStarted;
     private Dictionary<string, int> _votingResults = new ();
     private List<ModifierData> _currentVotingModifiers = new ();
     private Dictionary<uint, string> _playerVotes = new ();
@@ -30,6 +31,7 @@ public class VotingManager : NetworkBehaviour
     [Server]
     public IEnumerator StartVotingPhase(List<GameObject> players)
     {
+        OnVotingStarted?.Invoke();
         _votingResults.Clear();
         _playerVotes.Clear();
         _rerollVotes.Clear();

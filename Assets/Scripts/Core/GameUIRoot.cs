@@ -8,7 +8,7 @@ public class GameUIRoot : MonoBehaviour
     {
         gameManager.OnPlayerInitialized += (player) =>
         {
-            votingManager.OnShowVoteData += (_, _, _, _) =>
+            votingManager.OnVotingStarted += () =>
             {
                 player.CameraController.UnlockCursor();
                 player.CameraController.LockCamera();

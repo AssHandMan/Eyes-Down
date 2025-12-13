@@ -16,7 +16,7 @@ public class Bootstrap : MonoBehaviour
     private void Initialize()
     {
         _votingManager.Initialize(_config);
-        _votingManager.OnShowVoteData += (_, _, _, _) =>
+        _votingManager.OnVotingStarted += () =>
         {
             if (_player) _player.FocusedOnUI.Value = true;
         };
