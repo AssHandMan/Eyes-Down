@@ -3,13 +3,16 @@ using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
 using System.Collections;
+using Mirror.SimpleWeb;
 
 public class GameManager : NetworkBehaviour
 {
+    public Action<PlayerController> OnPlayerInitialized;
     [SerializeField] private Transform center;
     [SerializeField] private float radius = 5f;
     [SerializeField] private List<LaptopController> laptops;
     [SerializeField] private List<PlayerConnectionMeneger> playerConnections;
+    private PlayerController _player;
 
     private List<GameObject> spawnedPlayers = new ();
     private float timePrepare, timeBidding;
@@ -105,5 +108,22 @@ public class GameManager : NetworkBehaviour
     public void ExitTheGame()
     {
         Application.Quit();
+    }
+    
+    [Client]
+    private void CheckForLocalPlayer()
+    {
+        var player = FindFirstObjectByType<PlayerController>();
+        if (player)
+        {
+            _player = player;
+            OnPlayerInitialized?.Invoke(_player);
+        }
+    }
+    
+    private void Update()
+    {
+        if (!_player)
+            CheckForLocalPlayer();
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using Mirror;
 using UnityEngine;
 using Unity.Cinemachine;
@@ -10,6 +11,9 @@ public class CameraController : NetworkBehaviour
     [SerializeField] private Transform head;
     private GameObject playerCameraInstance;
     private CinemachineCamera virtualCamera;
+    private int _safeCounter;
+    private int _safeCameraCounter;
+    private bool _isCursorLocked = true;
 
     public override void OnStartLocalPlayer()
     {
@@ -49,42 +53,78 @@ public class CameraController : NetworkBehaviour
         }
     }
 
-    public void ChangeView(Transform viewPos)
+    private void Update()
     {
-        if (virtualCamera.Target.TrackingTarget == head)
+        if (_isCursorLocked)
         {
-            virtualCamera.Target.TrackingTarget = viewPos;
-            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
-            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
-            playerCameraInstance.transform.rotation = Quaternion.Euler(viewPos.transform.eulerAngles.x, viewPos.transform.eulerAngles.y, viewPos.transform.eulerAngles.z);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-        else
-        {
-            virtualCamera.Target.TrackingTarget = head;
-            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = true;
-            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = true;
+            if (Cursor.visible)
+            {
+                Debug.Log($"[Update] Forcing cursor hidden. _safeCounter: {_safeCounter}");
+            }
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
     }
 
-    public void LockCameraController()
+    public void ChangeView(Transform viewPos)
     {
-        if (!Cursor.visible)
+        if (virtualCamera.Target.TrackingTarget == head)
         {
-            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
-            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            virtualCamera.Target.TrackingTarget = viewPos;
+            playerCameraInstance.transform.rotation = Quaternion.Euler(viewPos.transform.eulerAngles.x, viewPos.transform.eulerAngles.y, viewPos.transform.eulerAngles.z);
         }
         else
         {
+            virtualCamera.Target.TrackingTarget = head;
+        }
+    }
+    
+    public void LockCursor()
+    {
+        _safeCounter = Mathf.Max(0, _safeCounter - 1);
+        Debug.Log($"[LockCursor] _safeCounter: {_safeCounter}, _isCursorLocked: {_isCursorLocked}");
+
+        if (_safeCounter == 0)
+        {
+            _isCursorLocked = true;
+            Debug.Log("[LockCursor] Cursor locked!");
+        }
+    }
+
+    public void UnlockCursor()
+    {
+        _safeCounter++;
+        _isCursorLocked = false;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        Debug.Log($"[UnlockCursor] _safeCounter: {_safeCounter}, Cursor shown");
+    }
+    
+    /// <summary>
+    /// Блокирует управление камерой (скрывает курсор)
+    /// </summary>
+    public void LockCamera()
+    {
+        _safeCameraCounter++;
+        if (!playerCameraInstance) return;
+        
+        playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
+        playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
+    }
+
+    /// <summary>
+    /// Разблокирует управление камерой (показывает курсор)
+    /// </summary>
+    public void UnlockCamera()
+    {
+        _safeCameraCounter = Mathf.Max(_safeCameraCounter - 1, 0);
+        if (!playerCameraInstance) return;
+
+        if (_safeCameraCounter == 0)
+        {
             playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = true;
             playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = true;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
     }
 }

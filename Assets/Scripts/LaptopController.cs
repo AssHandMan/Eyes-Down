@@ -10,28 +10,35 @@ public class LaptopController : InteractiveObject
     private float money;
     private bool isOpen, isUsing;
     private CameraController cameraController;
-    void Start()
-    {
-
-    }
+    private bool _isInFocus;
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) & isUsing)
+        if (Input.GetKeyDown(KeyCode.Escape) && isUsing && _isInFocus)
         {
             cameraController.ChangeView(null);
+            cameraController.UnlockCamera();
+            cameraController.LockCursor();
             isUsing = false;
         }
     }
 
     public override void Interact(GameObject plr)
     {
+        if (!_isInFocus) return;
         base.Interact(plr);
         cameraController = plr.transform.parent.GetComponent<CameraController>();
         cameraController.ChangeView(viewPos);
+        cameraController.LockCamera();
+        cameraController.UnlockCursor();
         isUsing = true;
     }
 
+    public void SetInFocus(bool value)
+    {
+        _isInFocus = value;
+    }
+    
     public void OpenClose()
     {
         laptopCover.localRotation = Quaternion.Euler(isOpen ? 90 : 0, 0, 0);
@@ -40,12 +47,12 @@ public class LaptopController : InteractiveObject
 
     public void OpenNews()
     {
-        text.text = "Вы такой лох! Вот это новость, да?)";
+        text.text = "пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ! пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ?)";
     }
 
     public void OpenStockMarket()
     {
-        text.text = "У вас ровно" + money + "русских долларов";
+        text.text = "пїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ" + money + "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
     }
 
     public void AddMoney(int money)

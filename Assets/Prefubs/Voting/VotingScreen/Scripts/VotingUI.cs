@@ -116,11 +116,8 @@ public class VotingUI : MonoBehaviour
     {
         _group.DOFade(state ? 1 : 0, _fadeDuration);
         _group.blocksRaycasts = state;
-        
-        Cursor.lockState = state ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = state;
     }
-    
+
     public void UpdateTimer(float timeRemaining)
     {
         _timerText.text = string.Format(_timerFormat, Mathf.CeilToInt(timeRemaining));

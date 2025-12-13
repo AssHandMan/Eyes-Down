@@ -10,6 +10,7 @@ public class PlayerTakeDropSystem : NetworkBehaviour
 
     private InteractiveObject objLook, objIntercat;
     private HintsMsgController hintsMsgController;
+    private bool _isFocused;
     private void Start()
     {
         hintsMsgController = FindAnyObjectByType<HintsMsgController>();
@@ -21,19 +22,22 @@ public class PlayerTakeDropSystem : NetworkBehaviour
         InteractObject();
         Move();
     }
+    
+    public void SetIsFocused(bool state) => _isFocused = state;
 
     private void LookObject()
     {
-        if (objIntercat != null)
-        {
-            if (objLook != null)
-            {
-                objLook.DisableOutline();
-                hintsMsgController.Hide();
-                objLook = null;
-            }
-            return;
-        }
+        if (!_isFocused) return;
+        // if (objIntercat)
+        // {
+        //     if (objLook)
+        //     {
+        //         objLook.DisableOutline();
+        //         hintsMsgController.Hide();
+        //         objLook = null;
+        //     }
+        //     return;
+        // }
 
         Ray ray = new Ray(transform.position, transform.forward);
         InteractiveObject newObj = null;
@@ -44,7 +48,7 @@ public class PlayerTakeDropSystem : NetworkBehaviour
         if (newObj == objLook)
             return;
 
-        if (objLook != null)
+        if (objLook)
         {
             objLook.DisableOutline();
             hintsMsgController.Hide();
@@ -52,7 +56,7 @@ public class PlayerTakeDropSystem : NetworkBehaviour
 
         objLook = newObj;
 
-        if (objLook != null)
+        if (objLook)
         {
             objLook.EnableOutline();
             hintsMsgController.Print(objLook.PrintHelp());
@@ -61,7 +65,7 @@ public class PlayerTakeDropSystem : NetworkBehaviour
 
     private void InteractObject()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0) && _isFocused)
         {
             if (objIntercat == null)
             {

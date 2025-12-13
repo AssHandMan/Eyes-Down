@@ -1918,6 +1918,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 430969461cf2a794b88d2c6312e53c8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   hintText: "\u0412\u0430\u0448 \u043B\u0443\u0447\u0448\u0438\u0439 \u0434\u0440\u0443\u0433\nM0
     - \u0418\u0441\u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u044C\nESC
     - \u0412\u044B\u0439\u0442\u0438"
@@ -1937,6 +1940,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69602e5600b5b4743a99582bcd235353, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
 --- !u!114 &8015970940006499420
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1987,6 +1993,7 @@ GameObject:
   - component: {fileID: 6633428213004886371}
   - component: {fileID: 6014499629566573568}
   - component: {fileID: 5752363025016176886}
+  - component: {fileID: 6855068339298345511}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2174,6 +2181,25 @@ MonoBehaviour:
   syncInterval: 0
   laptop: {fileID: 5109632860421211376}
   isReady: 0
+  stage: 
+--- !u!114 &6855068339298345511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4220736663905400612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6b8444728c48a48973f306e363dd56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  CameraController: {fileID: 6014499629566573568}
+  _laptop: {fileID: 5109632860421211376}
+  _takeDropSystem: {fileID: 1928665052158196736}
 --- !u!1 &4375681615063765313
 GameObject:
   m_ObjectHideFlags: 0
@@ -2586,6 +2612,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e959243110153814c8ed588b0cfde076, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
   hintText: "\u041B\u0435\u0433\u043A\u0438\u0439 \u0441\u043F\u043E\u0441\u043E\u0431
     \u0437\u0430\u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C, \u0442\u043E\u043B\u044C\u043A\u043E
     \u043D\u0435 \u0437\u0430\u0431\u0443\u0434\u044C \u0437\u0430\u0440\u044F\u0434\u0438\u0442\u044C\nM0/ESC
@@ -2613,6 +2642,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69602e5600b5b4743a99582bcd235353, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
 --- !u!1 &5470913638970325729
 GameObject:
   m_ObjectHideFlags: 0

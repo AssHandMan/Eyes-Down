@@ -10,6 +10,7 @@ public class VotingManager : NetworkBehaviour
     public System.Action<float> OnUpdateTimer;
     public System.Action<Dictionary<string, int>, int> OnVotesDataChanged;
     public System.Action<string> OnModifierWin;
+    public System.Action OnVotingEnd;
     private Dictionary<string, int> _votingResults = new ();
     private List<ModifierData> _currentVotingModifiers = new ();
     private Dictionary<uint, string> _playerVotes = new ();
@@ -62,10 +63,7 @@ public class VotingManager : NetworkBehaviour
                 timeRemaining -= 1f;
             }
 
-            if (!_allPlayersVoted)
-            {
-                HandleVotingTimeout(players);
-            }
+            // Автоматическое голосование убрано - игроки должны сами голосовать
 
             rerollWon = CalculateVotingResults();
 
@@ -92,6 +90,7 @@ public class VotingManager : NetworkBehaviour
         } while (rerollWon);
 
         yield return new WaitForSeconds(_config.WinnerShowDuration);
+        OnVotingEnd?.Invoke();
     }
 
     [Server]
@@ -100,9 +99,9 @@ public class VotingManager : NetworkBehaviour
         List<ModifierData> selectedModifiers = new List<ModifierData>();
         List<ModifierData> tempList = new List<ModifierData>(config.Modifiers);
 
-        // Если Reroll доступен, выбираем 3 модификатора (4-я карточка будет Reroll)
-        // Если Reroll недоступен, выбираем 4 модификатора
-        int count = rerollAvailable ? Mathf.Min(3, config.Modifiers.Length) : Mathf.Min(4, config.Modifiers.Length);
+        // Всегда выбираем 3 модификатора
+        // Если Reroll доступен - будет показана 4-я карточка для реролла
+        int count = Mathf.Min(3, config.Modifiers.Length);
 
         for (int i = 0; i < count; i++)
         {
@@ -124,22 +123,6 @@ public class VotingManager : NetworkBehaviour
         return names;
     }
 
-    [Server]
-    private void HandleVotingTimeout(List<GameObject> players)
-    {
-        foreach (var player in players)
-        {
-            var netId = player.GetComponent<NetworkIdentity>();
-            // Назначаем случайный модификатор только игрокам, которые не голосовали вообще
-            if (!_playerVotes.ContainsKey(netId.netId) && !_rerollVotes.ContainsKey(netId.netId))
-            {
-                int randomModifierIndex = Random.Range(0, _currentVotingModifiers.Count);
-                string randomModifierName = _currentVotingModifiers[randomModifierIndex].ModifierName;
-                _votingResults[randomModifierName]++;
-                _playerVotes[netId.netId] = randomModifierName;
-            }
-        }
-    }
 
     [Server]
     private bool CalculateVotingResults()

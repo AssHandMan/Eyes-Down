@@ -6,6 +6,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private VotingManager _votingManager;
     [SerializeField] private GameConfig _config;
     [SerializeField] private GameManager _gameManager;
+    private PlayerController _player;
     
     private void Awake()
     {
@@ -15,7 +16,18 @@ public class Bootstrap : MonoBehaviour
     private void Initialize()
     {
         _votingManager.Initialize(_config);
+        _votingManager.OnShowVoteData += (_, _, _, _) =>
+        {
+            if (_player) _player.FocusedOnUI.Value = true;
+        };
+        _votingManager.OnVotingEnd += () =>
+        {
+            if (_player) _player.FocusedOnUI.Value = false;
+        };
+        
         _gameManager.Initialize(_votingManager);
-        _gameUIRoot.Bind(_votingManager, _config);
+        _gameManager.OnPlayerInitialized += (player) => _player = player;
+        
+        _gameUIRoot.Bind(_votingManager, _config, _gameManager);
     }
 }
