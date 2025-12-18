@@ -1,4 +1,9 @@
+using EyesDown.Core;
+using EyesDown.Settings;
+using Mirror;
 using UnityEngine;
+using UnityEngine.Audio;
+using Zenject;
 
 public class Bootstrap : MonoBehaviour
 {
@@ -6,7 +11,15 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private VotingManager _votingManager;
     [SerializeField] private GameConfig _config;
     [SerializeField] private GameManager _gameManager;
+    [SerializeField] private AudioMixer _audioMixer;
+    [Inject] private SaveLoaderManager _saveLoaderManager;
     private PlayerController _player;
+
+    [Server]
+    private void ActivateGameManager()
+    {
+        _gameManager.gameObject.SetActive(true);
+    }
     
     private void Awake()
     {
@@ -15,6 +28,7 @@ public class Bootstrap : MonoBehaviour
 
     private void Initialize()
     {
+        ActivateGameManager();
         _votingManager.Initialize(_config);
         _votingManager.OnVotingStarted += () =>
         {
@@ -27,6 +41,8 @@ public class Bootstrap : MonoBehaviour
         
         _gameManager.Initialize(_votingManager);
         _gameManager.OnPlayerInitialized += (player) => _player = player;
+        
+        new SettingsUseCase(_saveLoaderManager, _audioMixer).Bind();
         
         _gameUIRoot.Bind(_votingManager, _config, _gameManager);
     }

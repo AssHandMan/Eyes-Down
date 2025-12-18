@@ -1,9 +1,13 @@
 using System.Collections;
+using EyesDown.Settings;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameUIRoot : MonoBehaviour
 {
     [SerializeField] private VotingUI _votingUI;
+    [SerializeField] private SettingsUI _settingsUI;
+    [SerializeField] private Button _settingsBtn;
     private PlayerController _player;
     
     
@@ -33,6 +37,9 @@ public class GameUIRoot : MonoBehaviour
             }));
         };
         _votingUI.Initialize(config);
+        
+        _settingsUI.Initialize();
+        _settingsBtn.onClick.AddListener(() => _settingsUI.SetState(true));
     }
 
     private IEnumerator WaitForPlayerInitialized(System.Action callback)
