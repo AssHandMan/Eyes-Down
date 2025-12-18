@@ -118,6 +118,7 @@ public class GameManager : NetworkBehaviour
         {
             if (player.isLocalPlayer)
             {
+                Debug.Log("PLAYER INIT");
                 _player = player;
                 OnPlayerInitialized?.Invoke(_player);
                 break;

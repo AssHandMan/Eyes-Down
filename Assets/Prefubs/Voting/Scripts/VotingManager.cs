@@ -31,7 +31,7 @@ public class VotingManager : NetworkBehaviour
     [Server]
     public IEnumerator StartVotingPhase(List<GameObject> players)
     {
-        OnVotingStarted?.Invoke();
+        Debug.Log("START VOTING");
         _votingResults.Clear();
         _playerVotes.Clear();
         _rerollVotes.Clear();
@@ -51,7 +51,7 @@ public class VotingManager : NetworkBehaviour
         }
 
         string[] modifierNames = GetModifierNames(_currentVotingModifiers);
-        RpcShowVotingScreen(modifierNames, !_rerollUsed);
+        RpcShowVotingScreen(modifierNames, !_rerollUsed, true);
 
         bool rerollWon;
         do
@@ -87,11 +87,17 @@ public class VotingManager : NetworkBehaviour
                     _votingResults[modifier.ModifierName] = 0;
 
                 modifierNames = GetModifierNames(_currentVotingModifiers);
-                RpcShowVotingScreen(modifierNames, false);
+                RpcShowVotingScreen(modifierNames, false, false);
             }
         } while (rerollWon);
 
         yield return new WaitForSeconds(_config.WinnerShowDuration);
+        RpcNotifyVotingEnd();
+    }
+
+    [ClientRpc]
+    private void RpcNotifyVotingEnd()
+    {
         OnVotingEnd?.Invoke();
     }
 
@@ -288,8 +294,9 @@ public class VotingManager : NetworkBehaviour
         return counts;
     }
 
-    private void ShowVotingScreenLocal(string[] modifierNames, bool rerollAvailable)
+    private void ShowVotingScreenLocal(string[] modifierNames, bool rerollAvailable, bool isFirstStage = true)
     {
+        if (isFirstStage) OnVotingStarted?.Invoke();
         List<ModifierData> tempModifiers = new ();
         foreach (var name in modifierNames)
         {
@@ -301,9 +308,9 @@ public class VotingManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcShowVotingScreen(string[] modifierNames, bool rerollAvailable)
+    private void RpcShowVotingScreen(string[] modifierNames, bool rerollAvailable, bool isFirstStage)
     {
-        ShowVotingScreenLocal(modifierNames, rerollAvailable);
+        ShowVotingScreenLocal(modifierNames, rerollAvailable, isFirstStage);
     }
 
     [ClientRpc]
