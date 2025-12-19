@@ -1,3 +1,4 @@
+using EyesDown.Core;
 using UnityEngine;
 using Mirror;
 using R3;
@@ -15,5 +16,10 @@ public class PlayerController : NetworkBehaviour
     {
         FocusedOnUI.Subscribe((value) => _laptop.SetInFocus(!value));
         FocusedOnUI.Subscribe((value) => _takeDropSystem.SetIsFocused(!value));
+    }
+
+    public void Initialize(SaveLoaderManager saveLoaderManager)
+    {
+        saveLoaderManager.Sensivity.Subscribe(CameraController.SetRotationSensitivity);
     }
 }

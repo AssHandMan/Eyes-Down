@@ -8,7 +8,7 @@ namespace Settings.SettingBlocks
     {
         protected override string[] GetValues()
         {
-            return Screen.resolutions.Select((x) => $"{x.width}x{x.height}").ToArray();
+            return Screen.resolutions.Select((x) => $"{x.width}x{x.height}").Distinct().ToArray();
         }
     }
 }

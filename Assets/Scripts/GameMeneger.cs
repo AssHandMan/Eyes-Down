@@ -4,6 +4,7 @@ using Mirror;
 using System.Collections.Generic;
 using System.Collections;
 using Mirror.SimpleWeb;
+using Zenject.Asteroids;
 
 public class GameManager : NetworkBehaviour
 {
@@ -18,10 +19,12 @@ public class GameManager : NetworkBehaviour
     private float timePrepare, timeBidding;
     private bool _isGameStarted;
     private VotingManager _votingManager;
+    private GameConfig _config;
 
-    public void Initialize(VotingManager votingManager)
+    public void Initialize(VotingManager votingManager, GameConfig config)
     {
         _votingManager = votingManager;
+        _config = config;
     }
     
     [Server]
@@ -97,6 +100,7 @@ public class GameManager : NetworkBehaviour
         yield return StartCoroutine(StartModifiersVotePhase());
 
         SetGameStage("Game");
+        yield return new WaitForSeconds(27);
         StartCoroutine(GameStageProcces());
     }
 
@@ -130,5 +134,12 @@ public class GameManager : NetworkBehaviour
     {
         if (!_player)
             CheckForLocalPlayer();
+    }
+    
+    private void OnDestroy()
+    {
+#if !UNITY_EDITOR
+        Application.OpenURL(_config.QuestionaireLink);
+#endif
     }
 }

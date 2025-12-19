@@ -8,6 +8,7 @@ public class GameUIRoot : MonoBehaviour
     [SerializeField] private VotingUI _votingUI;
     [SerializeField] private SettingsUI _settingsUI;
     [SerializeField] private Button _settingsBtn;
+    [SerializeField] private Button _questionaireBtn;
     private PlayerController _player;
     
     
@@ -40,6 +41,8 @@ public class GameUIRoot : MonoBehaviour
         
         _settingsUI.Initialize();
         _settingsBtn.onClick.AddListener(() => _settingsUI.SetState(true));
+        
+        _questionaireBtn.onClick.AddListener(() => Application.OpenURL(config.QuestionaireLink));
     }
 
     private IEnumerator WaitForPlayerInitialized(System.Action callback)

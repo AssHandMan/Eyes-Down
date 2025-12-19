@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58086bee9fa7bb841b089a5c3e3396bc, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
+  QuestionaireLink: https://docs.google.com/forms/d/e/1FAIpQLSchK-OpnEK8ejh2iWBAF5zvZjvKdf4F5qcpJbLyQQzrJWU8bg/viewform?usp=publish-editor
   Modifiers:
   - {fileID: 11400000, guid: d158d554901ddfc4e91c56f261ab654b, type: 2}
   - {fileID: 11400000, guid: 415940ee7e9fbdb43a10c78ad04ac3a9, type: 2}

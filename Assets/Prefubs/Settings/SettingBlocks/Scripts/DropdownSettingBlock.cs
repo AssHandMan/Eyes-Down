@@ -48,5 +48,10 @@ namespace EyesDown.Settings.SettingBlocks
         {
             return _values;
         }
+
+        public void SetEnabled(bool value)
+        {
+            _dropdown.interactable = value;
+        }
     }
 }

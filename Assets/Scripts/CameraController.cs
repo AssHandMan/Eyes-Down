@@ -9,23 +9,33 @@ public class CameraController : NetworkBehaviour
 {
     [SerializeField] private GameObject playerCameraPrefab;
     [SerializeField] private Transform head;
-    private GameObject playerCameraInstance;
+    private GameObject _playerCameraInstance;
+    private CinemachineInputAxisController _axisController;
+    private CinemachinePanTilt _panTilt;
     private CinemachineCamera virtualCamera;
     private int _safeCounter;
     private int _safeCameraCounter;
     private bool _isCursorLocked = true;
+    private Vector2 _baseSensivity;
 
     public override void OnStartLocalPlayer()
     {
         base.OnStartLocalPlayer();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        playerCameraInstance = Instantiate(playerCameraPrefab);
-        virtualCamera = playerCameraInstance.GetComponent<CinemachineCamera>();
+        _playerCameraInstance = Instantiate(playerCameraPrefab);
+        virtualCamera = _playerCameraInstance.GetComponent<CinemachineCamera>();
+        _axisController = _playerCameraInstance.GetComponent<CinemachineInputAxisController>();
+        _panTilt = _playerCameraInstance.GetComponent<CinemachinePanTilt>();
+
+        float senseX = _axisController.Controllers[0].Input.Gain;
+        float senseY = _axisController.Controllers[1].Input.Gain;
+        _baseSensivity = new Vector2(senseX, senseY);
+        
         virtualCamera.Target.TrackingTarget = head;
 
         var headConstraint = head.GetComponent<RotationConstraint>();
-        StartCoroutine(AssignConstraintNextFrame(headConstraint, playerCameraInstance.transform));
+        StartCoroutine(AssignConstraintNextFrame(headConstraint, _playerCameraInstance.transform));
     }
 
     private IEnumerator AssignConstraintNextFrame(RotationConstraint constraint, Transform target)
@@ -47,9 +57,9 @@ public class CameraController : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
-        if (isLocalPlayer && playerCameraInstance != null)
+        if (isLocalPlayer && _playerCameraInstance != null)
         {
-            Destroy(playerCameraInstance);
+            Destroy(_playerCameraInstance);
         }
     }
 
@@ -71,7 +81,7 @@ public class CameraController : NetworkBehaviour
         if (virtualCamera.Target.TrackingTarget == head)
         {
             virtualCamera.Target.TrackingTarget = viewPos;
-            playerCameraInstance.transform.rotation = Quaternion.Euler(viewPos.transform.eulerAngles.x, viewPos.transform.eulerAngles.y, viewPos.transform.eulerAngles.z);
+            _playerCameraInstance.transform.rotation = Quaternion.Euler(viewPos.transform.eulerAngles.x, viewPos.transform.eulerAngles.y, viewPos.transform.eulerAngles.z);
         }
         else
         {
@@ -107,10 +117,10 @@ public class CameraController : NetworkBehaviour
     public void LockCamera()
     {
         _safeCameraCounter++;
-        if (!playerCameraInstance) return;
+        if (!_playerCameraInstance) return;
         
-        playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = false;
-        playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = false;
+        _axisController.enabled = false;
+        _panTilt.enabled = false;
     }
 
     /// <summary>
@@ -119,12 +129,20 @@ public class CameraController : NetworkBehaviour
     public void UnlockCamera()
     {
         _safeCameraCounter = Mathf.Max(_safeCameraCounter - 1, 0);
-        if (!playerCameraInstance) return;
+        if (!_playerCameraInstance) return;
 
         if (_safeCameraCounter == 0)
         {
-            playerCameraInstance.GetComponent<CinemachineInputAxisController>().enabled = true;
-            playerCameraInstance.GetComponent<CinemachinePanTilt>().enabled = true;
+            _axisController.enabled = true;
+            _panTilt.enabled = true;
         }
+    }
+    
+    public void SetRotationSensitivity(float sensitivity)
+    {
+        if (!_playerCameraInstance) return;
+
+        _axisController.Controllers[0].Input.Gain = _baseSensivity.x * sensitivity / 100f;
+        _axisController.Controllers[1].Input.Gain = _baseSensivity.y * sensitivity / 100f;
     }
 }

@@ -52,6 +52,12 @@ namespace EyesDown.Settings
                 .Subscribe(SetVSync);
         }
 
+        public void SetVolumeSettings()
+        {
+            SetSoundsVolume(_saveLoaderManager.SoundsVolume.CurrentValue);
+            SetMusicVolume(_saveLoaderManager.MusicVolume.CurrentValue);
+        }
+        
         private void SetSoundsVolume(float value)
         {
             _audioMixer.SetFloat("SoundsVolume", -80 * (1 - value / 100f));
@@ -86,7 +92,10 @@ namespace EyesDown.Settings
 
         private void SetFPS(string value)
         {
-            Application.targetFrameRate = int.Parse(value);
+            if (value == "Без ограничений")
+                Application.targetFrameRate = 999;
+            else
+                Application.targetFrameRate = int.Parse(value);
         }
 
         private void SetRenderingScale(string value)
