@@ -1,17 +1,32 @@
+using System;
 using UnityEngine;
 using Mirror;
 using System.Collections.Generic;
 using System.Collections;
+using Mirror.SimpleWeb;
+using Zenject.Asteroids;
 
 public class GameManager : NetworkBehaviour
 {
+    public Action<PlayerController> OnPlayerInitialized;
     [SerializeField] private Transform center;
     [SerializeField] private float radius = 5f;
     [SerializeField] private List<LaptopController> laptops;
     [SerializeField] private List<PlayerConnectionMeneger> playerConnections;
-    private List<GameObject> spawnedPlayers = new List<GameObject>();
-    private float timePrepare, timeBidding;
+    private PlayerController _player;
 
+    private List<GameObject> spawnedPlayers = new ();
+    private float timePrepare, timeBidding;
+    private bool _isGameStarted;
+    private VotingManager _votingManager;
+    private GameConfig _config;
+
+    public void Initialize(VotingManager votingManager, GameConfig config)
+    {
+        _votingManager = votingManager;
+        _config = config;
+    }
+    
     [Server]
     public void AddPlayer(GameObject player)
     {
@@ -61,8 +76,9 @@ public class GameManager : NetworkBehaviour
         {
             if (playerConnections[i].GetReady()) count++;
         }
-        if (count > 0)
+        if (count > 0 && !_isGameStarted)
         {
+            _isGameStarted = true;
             StartCoroutine(GameStageProcces());
         }
     }
@@ -80,16 +96,50 @@ public class GameManager : NetworkBehaviour
     {
         yield return new WaitForSeconds(3);
         SetGameStage("Preparing");
-        yield return new WaitForSeconds(3);
+
+        yield return StartCoroutine(StartModifiersVotePhase());
+
         SetGameStage("Game");
-        yield return new WaitForSeconds(3);
-        SetGameStage("Preparing2");
-        yield return new WaitForSeconds(3);
-        SetGameStage("Game2");
+        yield return new WaitForSeconds(27);
+        StartCoroutine(GameStageProcces());
+    }
+
+    private IEnumerator StartModifiersVotePhase()
+    {
+        yield return _votingManager.StartVotingPhase(spawnedPlayers);
     }
 
     public void ExitTheGame()
     {
         Application.Quit();
+    }
+    
+    [Client]
+    private void CheckForLocalPlayer()
+    {
+        var players = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        foreach (var player in players)
+        {
+            if (player.isLocalPlayer)
+            {
+                Debug.Log("PLAYER INIT");
+                _player = player;
+                OnPlayerInitialized?.Invoke(_player);
+                break;
+            }
+        }
+    }
+    
+    private void Update()
+    {
+        if (!_player)
+            CheckForLocalPlayer();
+    }
+    
+    private void OnDestroy()
+    {
+#if !UNITY_EDITOR
+        Application.OpenURL(_config.QuestionaireLink);
+#endif
     }
 }

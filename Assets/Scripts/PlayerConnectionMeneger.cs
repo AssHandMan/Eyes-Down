@@ -12,9 +12,10 @@ public class PlayerConnectionMeneger : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        Debug.Log("ON START SERVER");
         base.OnStartServer();
         manager = FindAnyObjectByType<GameManager>();
-        if (manager != null)
+        if (manager)
         {
             manager.AddPlayer(gameObject);
             isReady = true;
@@ -24,6 +25,7 @@ public class PlayerConnectionMeneger : NetworkBehaviour
 
     public override void OnStopServer()
     {
+        Debug.Log("ON STOP SERVER");
         base.OnStopServer();
         if (manager != null)
             manager.RemovePlayer(gameObject);

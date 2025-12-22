@@ -23,7 +23,7 @@ public class RevolverController : InteractiveObject
             pos.z = 1;
             transform.localPosition = pos;
             Cylindr.localEulerAngles = new Vector3 (0,90,0);
-            cam.LockCameraController();
+            cam.UnlockCamera();
             inProcess = true;
         }
     }
@@ -49,12 +49,12 @@ public class RevolverController : InteractiveObject
         {
             if (sockets[Random.Range(0, sockets.Length)].GetActive())
             {
-                Debug.Log("Умер");
+                Debug.Log("пїЅпїЅпїЅпїЅ");
                 plrHead.AddComponent<Rigidbody>();
             }
             else
             {
-                Debug.Log("Пронесло!");
+                Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ!");
                 laptop.AddMoney(1000 * count);
             }
             for (int i = 0; i < sockets.Length; i++)
@@ -69,7 +69,7 @@ public class RevolverController : InteractiveObject
         transform.position = startPos;
         transform.eulerAngles = startRot;
         Cylindr.localEulerAngles = new Vector3(0, 0, 0);
-        cam.LockCameraController();
+        cam.LockCamera();
         inProcess = false;
     }
 
